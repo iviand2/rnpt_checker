@@ -10,7 +10,7 @@ import logging
 from logger import logged_func
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import presence_of_element_located, visibility_of_element_located
+from selenium.webdriver.support.expected_conditions import element_to_be_clickable, visibility_of_element_located, invisibility_of_element_located, invisibility_of_element
 import selenium.common.exceptions as selenium_exceptions
 from sys import platform
 
@@ -24,17 +24,17 @@ abs_path = os.getcwd()
 
 
 class Driver:
-    def __init__(self, proxy='', wait=5):
+    def __init__(self, proxy='', wait=5, inv=True):
         self.error_reloads = 0
         self.wait = wait
         self.proxy = proxy
         self.zip_path = ''
         self.driver_patched = False
         self.__check_driver()
+        self.inv = inv
         self.options = self.__get_options()
         self.driver = webdriver.Chrome(options=self.options)
         self._configure_headless()
-        # self.driver = uc.Chrome(options=self.options, driver_executable_path='./chromedriver.exe')
         self.driver.implicitly_wait(self.wait)
 
     @logged_func
@@ -47,6 +47,23 @@ class Driver:
             return self.driver.find_element(By.CSS_SELECTOR, css_selector)
         except selenium_exceptions.TimeoutException:
             return False
+
+    @logged_func
+    def invisible_wait(self, css_selector):
+        WebDriverWait(self.driver, 30).until(invisibility_of_element(('css selector', css_selector)))
+        return True
+
+    @logged_func
+    def underground_click(self, element):
+        self.driver.execute_script("arguments[0].click();", element)
+
+    @logged_func
+    def wait_clickable(self, element, wait=20):
+        # return element_to_be_clickable(element)
+        element = WebDriverWait(self.driver, timeout=wait).until(
+            element_to_be_clickable(('css selector', element))
+        )
+        return element
 
     @logged_func
     def get(self, url):
@@ -64,7 +81,6 @@ class Driver:
             self.driver = webdriver.Chrome(options=self.options)
             self.driver_patched = False
             self._configure_headless()
-            # self.driver = uc.Chrome(options=self.__get_options())
             self.driver.implicitly_wait(self.wait)
             self.get(url)
         else:
@@ -138,7 +154,7 @@ class Driver:
                 zp.writestr("background.js", background_js)
             chrome_options.add_extension(pluginfile)
             self.zip_path = abs_path + '\\' + pluginfile
-        chrome_options.headless = True
+        chrome_options.headless = self.inv
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         chrome_options.add_argument("--window-size=1920,1080")
