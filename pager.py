@@ -19,19 +19,14 @@ class SearchPage(Driver):
         res = {}
         timer = timeit.Timer()
         start = timer.timer()
-        if self.driver.current_url == 'data:,':
+        # if self.driver.current_url == 'data:,':
+        if self.driver.current_url != 'https://www.nalog.gov.ru/rn77/service/traceability/#tab0':
             self.driver.get('https://www.nalog.gov.ru/rn77/service/traceability/#tab0')
         try:
             search_input = self.wait_clickable('input[class = "form-control mb-2 traceability_form_search"]')
         except:
             self.driver.get('https://www.nalog.gov.ru/rn77/service/traceability/#tab0')
             search_input = self.wait_clickable('input[class = "form-control mb-2 traceability_form_search"]')
-        # search_input = self.driver.find_element(
-        #     by='css selector',
-        #     value='input[class = "form-control mb-2 traceability_form_search"]'
-        # )
-        # search_input.clear()
-        # if search_input.is_enabled()
         try:
             search_input.send_keys(value)
         except selenium_exceptions.ElementNotInteractableException:
@@ -57,8 +52,6 @@ class SearchPage(Driver):
                 self.driver.save_screenshot('error.png')
                 raise ex
         time.sleep(5)
-        # self.invisible_wait('a[href="#tab1"]')
-        # self.wait_clickable('input[class = "form-control mb-2 traceability_form_search"]')
         search_input.clear()
         try:
             res['tn_ved'] = self.driver.find_element(

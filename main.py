@@ -1,3 +1,5 @@
+import time
+
 from logger import logger
 from file_work import File
 from pager import SearchPage
@@ -13,9 +15,19 @@ def main():
         try:
             res[c] = page.search(c)
         except Exception as ex:
-            page.driver.get('https://www.nalog.gov.ru/rn77/service/traceability/#tab0')
-            res[c] = page.search(c)
-    # res = {c: page.search(c) for c in set(data)}
+            errors = 0
+            while errors < 5:
+                try:
+                    page.driver.quit()
+                    page = SearchPage()
+                    page.driver.get('https://www.nalog.gov.ru/rn77/service/traceability/#tab0')
+                    time.sleep(10)
+                    res[c] = page.search(c)
+                    break
+                except:
+                    errors += 1
+            if errors == 5:
+                res[c] = 'Не смогли получить данные из-за ошибки'
     File().save(res)
 
 
