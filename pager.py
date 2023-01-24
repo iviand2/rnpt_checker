@@ -39,7 +39,7 @@ class SearchPage(Driver):
             time.sleep(20)
             search_input.send_keys(value)
         except Exception as ex:
-            self.driver.save_screenshot('error.jpg')
+            self.driver.save_screenshot('error.png')
             raise ex
         try:
             self.wait_clickable(
@@ -48,9 +48,14 @@ class SearchPage(Driver):
         except selenium_exceptions.ElementClickInterceptedException:
             self.driver.save_screenshot('error.png')
             time.sleep(20)
-            self.wait_clickable(
-                'a#search-button'
-            ).click()
+            try:
+                self.wait_clickable(
+                    'a#search-button'
+                ).click()
+            except Exception as ex:
+                print('Исключительная ситуевина, сохраняем скриншот')
+                self.driver.save_screenshot('error.png')
+                raise ex
         time.sleep(5)
         # self.invisible_wait('a[href="#tab1"]')
         # self.wait_clickable('input[class = "form-control mb-2 traceability_form_search"]')

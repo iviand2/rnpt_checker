@@ -8,7 +8,14 @@ def main():
     filepath = popup_get_file('Пожалуйста, укажите расположение книги продаж')
     data = File(filepath).read()
     page = SearchPage()
-    res = {c: page.search(c) for c in set(data)}
+    res = {}
+    for c in set(data):
+        try:
+            res[c] = page.search(c)
+        except Exception as ex:
+            page.driver.get('https://www.nalog.gov.ru/rn77/service/traceability/#tab0')
+            res[c] = page.search(c)
+    # res = {c: page.search(c) for c in set(data)}
     File().save(res)
 
 
